@@ -23,6 +23,15 @@ app.locals.redisClient.connect().then(console.log('Redis connected UI Server'))
     console.log(err);
   });
 
+app.use(fileUpload({
+  // 100mb file limit with and extra 50mb sauce
+  limits: { fileSize: 150 * 1024 * 1024 },
+  abortOnLimit: true,
+  useTempFiles : true,
+  tempFileDir : './TmpFiles/tmp/'
+}));
+  
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -31,7 +40,6 @@ app.set('view engine', 'hbs');
 app.use('/TmpFiles', express.static('/TmpFiles'));  
 app.use(express.static('/TmpFiles')); 
 
-
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -39,6 +47,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
+app.use('/upload', routes);
+app.use('/files', routes);
 app.use('/download', download);
 app.use('/myfiles', myFiles);
 

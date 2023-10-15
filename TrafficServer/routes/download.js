@@ -38,7 +38,7 @@ router.get('/go', function(req, res, next) {
         console.log(found);
         if(found){
           console.log("Object exists");
-          bucket.GetUrl(dlkey+ext).then((url) => {
+          bucket.GetDLUrl(dlkey+ext).then((url) => {
             res.redirect(url);
           })
         } else {

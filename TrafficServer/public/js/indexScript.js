@@ -12,19 +12,18 @@ const filesLoading = document.getElementById('filesLoading');
 const takinAWhile = document.getElementById('takinAWhile');
 const link = document.getElementById('link');
 
+form.addEventListener("submit", formSubmit)
+
 const uniqKey = (Math.random() + 1).toString(36).substring(7) + Math.floor(Math.random() * 100000);
 
-const CMP_ADDRESS = "http://localhost:3001"
-const TRF_ADDRESS = "http://localhost:3000"
-
-let user = "";
+let randomUser = "";
 $.ajax({
     url: 'https://random-word-api.herokuapp.com/word'
     ,success: function(data){
-        user = data[0]+(Math.floor(Math.random() * 100)).toString();
+        randomUser = data[0]+(Math.floor(Math.random() * 100)).toString();
     },
     error: function() { 
-        user += (Math.floor(Math.random() * 100000)).toString(); 
+        randomUser += (Math.floor(Math.random() * 100000)).toString(); 
     }  
     })
 
@@ -50,8 +49,6 @@ function(){
 
 $(document).change(function () {
 const checkedValue = flexSwitchCheckDefault.checked;
-const user = ranUser.value;
-form.action = CMP_ADDRESS+"/cmp?windows="+checkedValue+"&user="+user+"&uk="+uniqKey;
 if(ranUser.value != ""){
     myFilesButton.removeAttribute('disabled');
 } else {
@@ -60,7 +57,6 @@ if(ranUser.value != ""){
 });
 
 function activateMyFiles(){
-const user = ranUser.value;
 if(ranUser.value != ""){
     myFilesButton.removeAttribute('disabled');
 } else {
@@ -69,10 +65,8 @@ if(ranUser.value != ""){
 }
 
 function userGen(){
-ranUser.value = user;
+ranUser.value = randomUser;
 myFilesButton.removeAttribute('disabled');
-const checkedValue = flexSwitchCheckDefault.checked;
-form.action = CMP_ADDRESS+"/cmp?windows="+checkedValue+"&user="+ranUser.value+"&uk="+uniqKey;
 }
 
 function myfilessubmit(){
@@ -80,14 +74,45 @@ hideElements();
 window.location.href = "/myfiles?user="+ranUser.value;
 }
 
-function formSubmit() {
+function formSubmit(event) {
+    event.preventDefault();
     hideElements();
-    setTimeout(function() {
-        console.log("time out")
-        takinAWhile.style.display = 'inline'
-        link.innerHTML = TRF_ADDRESS+`/download?k=${uniqKey}&t=${flexSwitchCheckDefault.checked}`
-        loadSpinner.style.display = 'none'
-    }, 1000*120);
+    const checkedValue = flexSwitchCheckDefault.checked;
+    for (let i = 0; i < input.files.length; i++){
+        const file = input.files[i]
+        let url = "";
+        $.ajax({
+            async: false,
+            url: '/upload?name='+file.name+"&k="+uniqKey+"&t="+flexSwitchCheckDefault.checked+"&type="+file.type
+            ,success: function(data){
+                url += data;
+            },
+            error: function() { 
+                window.location.href = "/";
+            }  
+        })
+        const blob = new Blob([file],{type: file.type})
+        $.ajax({
+            async:false,
+            url: url,
+            type: 'PUT',
+            dataType: file.type,
+            data: blob,
+            processData:false,
+            contentType: file.type,
+            success: function(response) {
+              console.log("Data uploaded");
+            }
+         });
+    }
+    console.log("submitted")
+    window.location.href = `/files?k=${uniqKey}&t=${checkedValue}&u=${ranUser.value}`;
+    // setTimeout(function() {
+    //     console.log("time out")
+    //     takinAWhile.style.display = 'inline'
+    //     link.innerHTML = TRF_ADDRESS+`/download?k=${uniqKey}&t=${flexSwitchCheckDefault.checked}`
+    //     loadSpinner.style.display = 'none'
+    // }, 1000*120);
 }
 
 function hideElements(){
