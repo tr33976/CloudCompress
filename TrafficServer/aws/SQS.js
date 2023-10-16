@@ -21,10 +21,11 @@ async function sendMessage(key, windows, user){
           }
         },
         MessageBody: "compress_request_"+key,
-        MessageDeduplicationId: "Key",
-        MessageGroupId: "Group1",
+        MessageDeduplicationId: key,
+        MessageGroupId: "Group_"+key,
         QueueUrl: "https://sqs.ap-southeast-2.amazonaws.com/901444280953/group37-compress.fifo"
       };
+    console.log(params);
     await sqs.sendMessage(params, function(err, data) {
        if (err) {
          console.log("Queue send error", err);

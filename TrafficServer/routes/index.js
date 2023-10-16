@@ -15,10 +15,9 @@ router.get('/files', function(req, res, next) {
   const windows = req.query.t.trim()==='true';
   const user = req.query.u.trim() === "" ? "null" : user;
   
-  //ADD USER TO MESSAGE
   sqs.sendMessage(uniqKey, windows, user).then(()=>{
     res.redirect("/download?t="+windows+"&k="+uniqKey);
-  });
+  })
 });
 
 //get upload links
@@ -29,7 +28,6 @@ router.get('/upload', function(req, res, next) {
   const type = req.query.type.trim(); 
 
   bucket.getUploadURL(uniqKey, type, f_name).then((url) => {
-    console.log(url);
     res.send(url);
   });
 });
