@@ -26,7 +26,7 @@
         <button onclick="myfilessubmit()" id="myFilesButton" type="button" class="btn btn-secondary mb-3" disabled>
           See my files</button>
         </div>
-        <div class="row"> 
+        <div class="row justify-content-center"> 
         <br>
         <div style="text-align: center">Click GENERATE USER or enter <br> your existing user above before submitting</div>
         <div style="text-align: center">Leave it blank for anonymous sharing</div>
@@ -35,13 +35,6 @@
         <div class="row"> 
         <button id="ranUserButton" onclick="userGen()" type="button" class="btn btn-secondary mb-3 form-control-lg">Generate User</button>
         </div>
-        <h3 id="filesLoading" style="text-align:center; display:none">Loading, please be patient...</h3>
-        <div id="takinAWhile" style="text-align:center; display:none">
-          Looks like we are a bit busy right now...
-          <br>
-          Here's your download link, please check back with your user or link later.
-          </div>
-          <div id="link" style="text-align:center"></div>
         <div class="d-flex flex-column align-items-center justify-content-center">
                 <div id="loadSpinner" style="display:none" class="spinner-border" role="status">
         </div>
@@ -62,7 +55,7 @@
         <label id="winLab" class="form-check-label" for="flexSwitchCheckDefault">Make windows compatible</label>
         <div class="row">
           <div class="row align-items-centre">
-        <button id="submitform" onclick="formSubmit()" type="submit" class="btn btn-primary mb-3 form-control-lg" disabled>Compress em</button>
+        <button id="submitform" onclick="formSubmit()" type="button" class="btn btn-primary mb-3 form-control-lg" disabled>Compress em</button>
         </div>
         </form>
         </div>

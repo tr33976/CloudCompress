@@ -13,7 +13,7 @@ router.get('/', function(req, res, next) {
 router.get('/files', function(req, res, next) {
   const uniqKey = req.query.k.trim();
   const windows = req.query.t.trim()==='true';
-  const user = req.query.u.trim() === "" ? "null" : user;
+  const user = req.query.u.trim() === "" ? "null" : req.query.u.trim();
   
   sqs.sendMessage(uniqKey, windows, user).then(()=>{
     res.redirect("/download?t="+windows+"&k="+uniqKey);

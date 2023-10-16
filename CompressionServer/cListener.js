@@ -11,20 +11,22 @@ var queueURL = "https://sqs.ap-southeast-2.amazonaws.com/901444280953/group37-co
 
 const fileLoc = "./TmpFiles/";
 
+const params = {
+  AttributeNames: [
+     "SentTimestamp"
+  ],
+  MaxNumberOfMessages: 1,
+  MessageAttributeNames: [
+     "All"
+  ],
+  QueueUrl: queueURL,
+  VisibilityTimeout: 120,
+  WaitTimeSeconds: 20
+ };
+
 async function Listener(){
     while(1){
-        var params = {
-            AttributeNames: [
-               "SentTimestamp"
-            ],
-            MaxNumberOfMessages: 1,
-            MessageAttributeNames: [
-               "All"
-            ],
-            QueueUrl: queueURL,
-            VisibilityTimeout: 120,
-            WaitTimeSeconds: 20
-           };
+      try{
         console.log("New SQS poll start")
         await sqs.receiveMessage(params, function(err, data) {
             if (err) {
@@ -40,29 +42,30 @@ async function Listener(){
                   return res.Contents
                 }).then((files) => {
                   const awsFiles = files;
-                  console.log(files);
-                  bucket.GetObjects(fileLoc, files, key).then(() =>{
+                  bucket.GetObjects(fileLoc, awsFiles, key).then(() =>{
                     Compress.ProcessCompression(key, user, windows);
                     bucket.CleanUpFiles(awsFiles);
-                  });
-                  return files
-                }).then(() => {
-                  var deleteParams = {
-                    QueueUrl: queueURL,
-                    ReceiptHandle: data.Messages[0].ReceiptHandle
-                  };
-    
-                  sqs.deleteMessage(deleteParams, function(err, data) {
-                    if (err) {
-                      console.log("Delete Error", err);
-                    } else {
-                      console.log("Message Deleted", data);
-                    }
+                    const deleteParams = {
+                      QueueUrl: queueURL,
+                      ReceiptHandle: data.Messages[0].ReceiptHandle
+                    };
+      
+                    sqs.deleteMessage(deleteParams, function(err, data) {
+                      if (err) {
+                        console.log("Delete Error", err);
+                      } else {
+                        console.log("Message Deleted", data);
+                      }
+                    });
                   });
                 })
             }
           }).promise().then(() => console.log("SQS Poll resolved"));
-    }    
+      }
+      catch(error) {
+        console.log(error);
+      }
+    }   
 }
 
 Listener();

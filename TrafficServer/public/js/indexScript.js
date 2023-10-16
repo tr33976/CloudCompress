@@ -8,9 +8,6 @@ const ranUserButton = document.getElementById('ranUserButton');
 const myFilesButton = document.getElementById('myFilesButton');
 const loadSpinner = document.getElementById('loadSpinner');
 const winLab = document.getElementById('winLab');
-const filesLoading = document.getElementById('filesLoading');
-const takinAWhile = document.getElementById('takinAWhile');
-const link = document.getElementById('link');
 
 form.addEventListener("submit", formSubmit)
 
@@ -27,11 +24,26 @@ $.ajax({
     }  
     })
 
+
 $(document).ready(
 function(){
     $('input:file').change(
         function(){
             if ($(this).val()) {
+                let urls = [];
+                for(file of $(this.files)){
+                    $.ajax({
+                        async: false,
+                        url: '/upload?name='+file.name+"&k="+uniqKey+"&t="+flexSwitchCheckDefault.checked+"&type="+file.type
+                        ,success: function(data){
+                            urls.push(data);
+                        },
+                        error: function() { 
+                            window.location.href = "/";
+                        }  
+                    })
+                }
+                console.log(urls);
                 submitBtn.removeAttribute('disabled');
                 flexSwitchCheckDefault.removeAttribute('disabled');
             }
@@ -70,50 +82,39 @@ myFilesButton.removeAttribute('disabled');
 }
 
 function myfilessubmit(){
-hideElements();
 window.location.href = "/myfiles?user="+ranUser.value;
 }
 
+
+
 function formSubmit(event) {
-    event.preventDefault();
-    hideElements();
-    const checkedValue = flexSwitchCheckDefault.checked;
+    // event.preventDefault();
+    loadSpinner.style.display = 'inline'
+    let filescomplete = 0;
     for (let i = 0; i < input.files.length; i++){
         const file = input.files[i]
-        let url = "";
-        $.ajax({
-            async: false,
-            url: '/upload?name='+file.name+"&k="+uniqKey+"&t="+flexSwitchCheckDefault.checked+"&type="+file.type
-            ,success: function(data){
-                url += data;
-            },
-            error: function() { 
-                window.location.href = "/";
-            }  
-        })
         const blob = new Blob([file],{type: file.type})
+        console.log(file)
+        console.log(urls[i])
         $.ajax({
-            async:false,
-            url: url,
+            url: urls[i],
             type: 'PUT',
             dataType: file.type,
             data: blob,
             processData:false,
             contentType: file.type,
-            success: function(response) {
-              console.log("Data uploaded");
+            complete: function(response) {
+                filescomplete += 1;
+                console.log("submitted");
+                if(filescomplete===input.files.length){
+                    window.location.href = `/files?k=${uniqKey}&t=${flexSwitchCheckDefault.checked}&u=${ranUser.value}`;
+                }
             }
          });
     }
-    console.log("submitted")
-    window.location.href = `/files?k=${uniqKey}&t=${checkedValue}&u=${ranUser.value}`;
-    // setTimeout(function() {
-    //     console.log("time out")
-    //     takinAWhile.style.display = 'inline'
-    //     link.innerHTML = TRF_ADDRESS+`/download?k=${uniqKey}&t=${flexSwitchCheckDefault.checked}`
-    //     loadSpinner.style.display = 'none'
-    // }, 1000*120);
+    return false;
 }
+
 
 function hideElements(){
 loadSpinner.style.display = 'inline'

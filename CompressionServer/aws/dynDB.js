@@ -57,7 +57,7 @@ async function WriteToDBB(user, key, count){
       if (err) {
         console.log("Error", err);
       } else {
-        console.log("User:"+user+"log written to AWS DBB");
+        console.log("User: "+user+" log written to AWS DBB");
       }
     });
   });

@@ -17,7 +17,9 @@ async function CreateBucket(){
 }
 
 async function GetObjects(fileLoc, files, key){
-  fs.mkdirSync(fileLoc+key);
+  try{
+    fs.mkdirSync(fileLoc+key+"_temp");
+  } catch{}
   
   for(f of files){
     const params = {Bucket: bname, Key: f.Key}
@@ -35,7 +37,7 @@ async function GetObjects(fileLoc, files, key){
 async function ListDirectory(key){
   var params = {
     Bucket: bname,
-    Prefix: key
+    Prefix: key+"_temp"
   };
   const objlist = await s3.listObjectsV2(params).promise();
   console.log(objlist);

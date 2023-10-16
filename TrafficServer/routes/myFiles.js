@@ -1,14 +1,10 @@
 var express = require('express');
 var router = express.Router();
 require('dotenv').config();
-const AWS = require('aws-sdk');
 const dbb =  require('../aws/dynDBReads.js');
 
 
 router.get('/', function(req, res, next) {
-  //global address for web traffic
-  const TRF_ADDRESS = req.app.locals.TRF_ADDRESS
-  
   //if no user supplied go home
   if(!req.query.user){
     res.redirect("/");
@@ -30,7 +26,7 @@ router.get('/', function(req, res, next) {
       element.EXPIRE_STRING = e_time.toUTCString();
       element.VALID = new Date() < e_time;
     });
-    res.render('myFiles',{tabledat: itemdat, user: userKey, TRF_ADDRESS});
+    res.render('myFiles',{tabledat: itemdat, user: userKey});
   });
   } catch {
     //forward to dedicated error handler at some point
@@ -38,6 +34,5 @@ router.get('/', function(req, res, next) {
   }
   
 });
-
 
 module.exports = router;

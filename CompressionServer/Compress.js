@@ -8,7 +8,7 @@ const dbb =  require('./aws/dynDB.js');
 function ProcessCompression(uniqKey, user, windows){
   const fileLoc = "./TmpFiles/";
   let fileCount = 0;
-  fs.readdir(fileLoc, (err, files) => {
+  fs.readdirSync(fileLoc+uniqKey+"_temp", (err, files) => {
     fileCount = files.length;
   });
 
@@ -17,10 +17,10 @@ function ProcessCompression(uniqKey, user, windows){
   let command = "";
   if(windows){
     fileExt += ".zip";
-    command += "zip -r "+fileLoc+"/"+uniqKey+"/"+uniqKey+fileExt+" "+fileLoc+uniqKey+"/ -j";
+    command += "zip -r "+fileLoc+uniqKey+"_temp/"+uniqKey+fileExt+" "+fileLoc+uniqKey+"_temp/ -j";
   } else {
     fileExt += ".tar.gz";
-    command += "tar -zcvf "+fileLoc+"/"+uniqKey+"/"+uniqKey+fileExt+" -C "+fileLoc+uniqKey+"/ .";
+    command += "tar -zcvf "+fileLoc+uniqKey+"_temp/"+uniqKey+fileExt+" -C "+fileLoc+uniqKey+"_temp/ .";
   }
   //execute shell command
   execSync(command, (error, stdout, stderr) => {
@@ -34,12 +34,11 @@ function ProcessCompression(uniqKey, user, windows){
     }
   });
 
-
   //Put compressed file in bucket
-  const file = fs.readFileSync(fileLoc+"/"+uniqKey+"/"+uniqKey+fileExt);
+  const file = fs.readFileSync(fileLoc+uniqKey+"_temp/"+uniqKey+fileExt);
   bucket.CreateBucket().then(()=>{
     bucket.StoreObject(uniqKey+fileExt, file).then(()=>{
-      fs.rmSync(fileLoc+uniqKey, { recursive: true, force: true });
+      fs.rm(fileLoc+uniqKey, { recursive: true, force: true });
           //Write the item to AWS Dynamo DB for user tracking
       if(user != "null"){
         dbb.WriteToDBB(user, uniqKey+fileExt, fileCount);

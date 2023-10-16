@@ -21,7 +21,7 @@ async function getUploadURL(key, type, f_name) {
   // Get signed URL from S3
   const s3Params = {
     Bucket: bname,
-    Key: key+"/"+f_name,
+    Key: key+"_temp/"+f_name,
     Expires: 300,
     ContentType: type
   }
@@ -37,7 +37,6 @@ async function TestObject(key){
     await s3.headObject({Bucket: bname, Key: key}).promise()
     return true
   } catch (err) {
-      console.log("File not Found ERROR : " + err.code)
       return false
   }
 }

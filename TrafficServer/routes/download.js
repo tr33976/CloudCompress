@@ -14,7 +14,8 @@ router.get('/', function(req, res, next) {
   const dlkey = req.query.k.trim();
   const syskey = req.query.t.trim();
   res.render('download',{ 
-    dllink: TRF_ADDRESS+`/download/go?k=${dlkey}&t=${syskey}`, 
+    NOWdllink: TRF_ADDRESS+`/download/go?k=${dlkey}&t=${syskey}`, 
+    BUSYdllink: TRF_ADDRESS+`/download?k=${dlkey}&t=${syskey}`, 
     obKey: dlkey,
     syskey: syskey});
 });
@@ -29,24 +30,37 @@ router.get('/go', function(req, res, next) {
     ext = req.query.t.trim() === "true" ? ".zip" : ".tar.gz";
   }
   
-  redisClient.get(dlkey).then((result) => {
-    if(result){
-      const url = result;
-      res.redirect(url);
-    } else {
-      bucket.TestObject(dlkey+ext).then((found) => {
-        console.log(found);
-        if(found){
-          console.log("Object exists");
-          bucket.GetDLUrl(dlkey+ext).then((url) => {
-            res.redirect(url);
-          })
-        } else {
-          res.render('invalidLink');
-        }
+  bucket.TestObject(dlkey+ext).then((found) => {
+    console.log(found);
+    if(found){
+      console.log("Object exists");
+      bucket.GetDLUrl(dlkey+ext).then((url) => {
+        res.redirect(url);
       })
+    } else {
+      res.render('invalidLink');
     }
   })
+    
+});
+
+//pushes download direct to users browser from AWS bucket
+router.get('/status', function(req, res, next) {
+  const dlkey = req.query.k.trim();
+  let ext = "";
+
+  if(req.query.t!==""){
+    ext = req.query.t.trim() === "true" ? ".zip" : ".tar.gz";
+  }
+  bucket.TestObject(dlkey+ext).then((found) => {
+    console.log(found);
+    if(found){
+      res.send('true');
+    } else {
+      res.send('false');
+    }
+  })
+    
 });
 
 module.exports = router;

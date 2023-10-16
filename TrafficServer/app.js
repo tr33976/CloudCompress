@@ -14,31 +14,10 @@ var app = express();
 
 //set dev address
 app.locals.TRF_ADDRESS = "http://localhost:3000"
-app.locals.CMP_ADDRESS = "http://localhost:3001"
-
-//connect to redis client, will need update to AWS
-app.locals.redisClient = redis.createClient();
-app.locals.redisClient.connect().then(console.log('Redis connected UI Server'))
-  .catch((err) => {
-    console.log(err);
-  });
-
-app.use(fileUpload({
-  // 100mb file limit with and extra 50mb sauce
-  limits: { fileSize: 150 * 1024 * 1024 },
-  abortOnLimit: true,
-  useTempFiles : true,
-  tempFileDir : './TmpFiles/tmp/'
-}));
   
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
-
-//Just incase we need to handoff files on the traffic server
-app.use('/TmpFiles', express.static('/TmpFiles'));  
-app.use(express.static('/TmpFiles')); 
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
