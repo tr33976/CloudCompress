@@ -5,32 +5,29 @@ var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
 
 
 async function sendMessage(key, windows, user){
-    var params = {
+  
+  var params = {
         MessageAttributes: {
           "Key": {
             DataType: "String",
             StringValue: key
           },
-          "Windows": {
+          "Timestamp": {
             DataType: "String",
-            StringValue: windows.toString()
-          },
-          "User": {
-            DataType: "String",
-            StringValue: user
+            StringValue: (new Date()).toString()
           }
         },
-        MessageBody: "compress_request_"+key,
-        MessageDeduplicationId: key,
+        MessageBody: JSON.stringify({Key:key, Windows:windows.toString(), User:user}),
+        MessageDeduplicationId: key, //repeat messages with same key deleted
         MessageGroupId: "Group_"+key,
         QueueUrl: "https://sqs.ap-southeast-2.amazonaws.com/901444280953/group37-compress.fifo"
       };
-    console.log(params);
+    
     await sqs.sendMessage(params, function(err, data) {
        if (err) {
-         console.log("Queue send error", err);
+         console.log("SQS Queue send error", err);
        } else {
-         console.log("Queue upload success", data.MessageId);
+         console.log("SQS New job queued: ", key);
        }
      }).promise();
 }

@@ -9,7 +9,7 @@ async function GetDLUrl(key){
   await s3.getSignedUrlPromise('getObject', {
     Bucket: bname,
     Key: key,
-    Expires: 30 //link dies after 30 seconds
+    Expires: 300 //link dies after 30 seconds
   }).then((url) => {
     objurl+=url;
     return objurl;
@@ -30,7 +30,6 @@ async function getUploadURL(key, type, f_name) {
   return uploadURL
 }
 
-
 //test if object exists in bucket
 async function TestObject(key){
   try {
@@ -40,9 +39,20 @@ async function TestObject(key){
       return false
   }
 }
+//list directory under key, files are stored in a s3 directory before compression
+async function ListDirectory(key){
+  var params = {
+    Bucket: bname,
+    Prefix: key+"_temp" //uncompressed file dir have _temp suffix
+  };
+  const objlist = await s3.listObjectsV2(params).promise(); //returns object with an empty array if none
+  console.log(objlist);
+  return objlist
+}
 
 module.exports = {
   GetDLUrl,
   TestObject,
-  getUploadURL
+  getUploadURL,
+  ListDirectory
 };

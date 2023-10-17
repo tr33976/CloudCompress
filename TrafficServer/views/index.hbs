@@ -18,7 +18,7 @@
         <body>
         <h1 style="text-align: center">Compress'N'Send</h1>
         <strong><div style="text-align: center ">Files dissapear after 24 hours!</div></strong>
-        <div style="text-align: center">Enter your user name and click SEE MY FILES</div>
+        <div style="text-align: center">Enter your user name and click <br>SEE MY FILES</div>
         <div style="text-align: center">to access a record of your active files</div>
         <div class="row">
           <br>
@@ -28,7 +28,7 @@
         </div>
         <div class="row justify-content-center"> 
         <br>
-        <div style="text-align: center">Click GENERATE USER or enter <br> your existing user above before submitting</div>
+        <div style="text-align: center">Click GENERATE USER <br> or enter your existing user above before submitting new files</div>
         <div style="text-align: center">Leave it blank for anonymous sharing</div>
         <div style="text-align: center"><strong>~Dont lose it, it cant be retrieved~</strong></div>
         <br>
@@ -36,7 +36,8 @@
         <button id="ranUserButton" onclick="userGen()" type="button" class="btn btn-secondary mb-3 form-control-lg">Generate User</button>
         </div>
         <div class="d-flex flex-column align-items-center justify-content-center">
-                <div id="loadSpinner" style="display:none" class="spinner-border" role="status">
+          <div id="pleaseWait" style="display:none">Files uploading, patience please</div>
+          <div id="loadSpinner" style="display:none" class="spinner-border" role="status">
         </div>
         </div>
         </div>

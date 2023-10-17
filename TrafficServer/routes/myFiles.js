@@ -11,6 +11,7 @@ router.get('/', function(req, res, next) {
   };
   try{
     const userKey = req.query.user.trim();
+    //get user data from dynamodb
     dbb.ReadDBB(userKey).then((res)=>{
     if(res.length !== 0){
       return res;
@@ -18,19 +19,28 @@ router.get('/', function(req, res, next) {
       return [];
     }
   }).then((itemdat) => {
-    itemdat.forEach(element => {
-      const c_time = new Date(Number(element.CREATE_TIME));
-      element.CREATE_STRING = c_time.toUTCString();
-      const e_time = new Date(Number(element.CREATE_TIME));
-      e_time.setHours(c_time.getHours()+24);
-      element.EXPIRE_STRING = e_time.toUTCString();
-      element.VALID = new Date() < e_time;
-    });
-    res.render('myFiles',{tabledat: itemdat, user: userKey});
+    let records = true;
+    //append some expiry details
+    //add flag for expired just in case TTL hasnt processed in storage yet
+    if(itemdat.length > 0)
+    {
+      itemdat.forEach(element => {
+        const c_time = new Date(Number(element.CREATE_TIME));
+        element.CREATE_STRING = c_time.toUTCString();
+        const e_time = new Date(Number(element.CREATE_TIME));
+        e_time.setHours(c_time.getHours()+24);
+        element.EXPIRE_STRING = e_time.toUTCString();
+        element.VALID = new Date() < e_time;
+      });
+
+    } else {
+      records = false;
+    }
+   
+    res.render('myFiles',{tabledat: itemdat, user: userKey, records:records});
   });
   } catch {
-    //forward to dedicated error handler at some point
-    res.send("Server error try again later")
+    res.render('error');
   }
   
 });

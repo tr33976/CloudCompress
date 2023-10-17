@@ -20,8 +20,9 @@ async function GetObjects(fileLoc, files, key){
   try{
     fs.mkdirSync(fileLoc+key+"_temp");
   } catch{}
-  
+  let i = 1;
   for(f of files){
+    console.log("Get object: "+i+" for: "+key);
     const params = {Bucket: bname, Key: f.Key}
     await s3.getObject(params).promise().then((res) =>{
       return res.Body
@@ -29,6 +30,7 @@ async function GetObjects(fileLoc, files, key){
       fs.writeFileSync(fileLoc+f.Key, body, (err) => {
         if (err) { console.log(err); }
       });
+      i += 1;
     })
   }
   
@@ -40,7 +42,6 @@ async function ListDirectory(key){
     Prefix: key+"_temp"
   };
   const objlist = await s3.listObjectsV2(params).promise();
-  console.log(objlist);
   return objlist
 }
 
@@ -61,7 +62,6 @@ async function CleanUpFiles(files){
   for(let f of files){
     objects.push({Key : f.Key});
   }
-  console.log(objects);
   var params = {
     Bucket: bname,
     Delete: {

@@ -5,67 +5,55 @@ const dbb =  require('./aws/dynDB.js');
 const AWS = require('aws-sdk');
 require('dotenv').config();
 const Compress = require('./Compress.js');
+const Consumer = require('sqs-consumer')
+const { SQSClient } = require('@aws-sdk/client-sqs');
 
 var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
 var queueURL = "https://sqs.ap-southeast-2.amazonaws.com/901444280953/group37-compress.fifo";
 
 const fileLoc = "./TmpFiles/";
 
-const params = {
-  AttributeNames: [
-     "SentTimestamp"
-  ],
-  MaxNumberOfMessages: 1,
-  MessageAttributeNames: [
-     "All"
-  ],
-  QueueUrl: queueURL,
-  VisibilityTimeout: 120,
-  WaitTimeSeconds: 20
- };
 
-async function Listener(){
-    while(1){
-      try{
-        console.log("New SQS poll start")
-        await sqs.receiveMessage(params, function(err, data) {
-            if (err) {
-              console.log("Receive Error", err);
-            } else if (data.Messages) {
-                console.log(data.Messages);
-                const key =  data.Messages[0].MessageAttributes.Key.StringValue
-                const user =  data.Messages[0].MessageAttributes.User.StringValue
-                const windows =  data.Messages[0].MessageAttributes.Windows.StringValue === "true";
-                console.log(windows);
+async function ProcessMessage(data){
+    const key =  data.Key
+    const user =  data.User
+    const windows =  data.Windows === "true";
 
-              bucket.ListDirectory(key).then((res) =>{ 
-                  return res.Contents
-                }).then((files) => {
-                  const awsFiles = files;
-                  bucket.GetObjects(fileLoc, awsFiles, key).then(() =>{
-                    Compress.ProcessCompression(key, user, windows);
-                    bucket.CleanUpFiles(awsFiles);
-                    const deleteParams = {
-                      QueueUrl: queueURL,
-                      ReceiptHandle: data.Messages[0].ReceiptHandle
-                    };
-      
-                    sqs.deleteMessage(deleteParams, function(err, data) {
-                      if (err) {
-                        console.log("Delete Error", err);
-                      } else {
-                        console.log("Message Deleted", data);
-                      }
-                    });
-                  });
-                })
-            }
-          }).promise().then(() => console.log("SQS Poll resolved"));
-      }
-      catch(error) {
-        console.log(error);
-      }
-    }   
+    const files = await bucket.ListDirectory(key)
+    await bucket.GetObjects(fileLoc, files.Contents, key)
+    await Compress.ProcessCompression(key, user, windows, files.KeyCount, files.Contents)
 }
 
-Listener();
+
+const ConsumerObj = Consumer.Consumer.create({
+  queueUrl: queueURL,
+  batchSize: 2,
+  handleMessage: async (message) => {
+    const messBody = JSON.parse(message.Body);
+    console.log("New Message: " + messBody.Key);
+    try {
+      await ProcessMessage(JSON.parse(message.Body));
+    } catch(err) {
+      console.log(err);
+      throw Error("Compression process failure")
+    }
+    console.log("Message completed: "+ messBody.Key);
+  },
+  sqs: new SQSClient({
+    region: 'ap-southeast-2'
+  })
+})
+
+ConsumerObj.on('error', (err) => {
+  console.error(err.message);
+});
+
+ConsumerObj.on('processing_error', (err) => {
+  console.error(err.message);
+});
+
+ConsumerObj.on('timeout_error', (err) => {
+  console.error(err.message);
+});
+
+ConsumerObj.start();

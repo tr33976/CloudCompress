@@ -12,7 +12,6 @@ const url = "download/status"+window.location.search;
 
 var pollingStatus = true;
 var pollingTm = null;
-
 function stopPolling() {
     pollingStatus = false;
     clearTimeout(pollingTm);
@@ -41,20 +40,26 @@ function pollData() {
                 stopPolling();
                 fileAvailiable();
             }
+            if (pollingStatus && pollCount <= 5) {
+                pollingTm = setTimeout(function() {
+                    pollData();
+                }, 3000);
+            }
+            if(pollingStatus && pollCount > 5){
+                pollingTm = setTimeout(function() {
+                    pollData();
+                }, 10000);
+            }
             if(pollCount > 10){
                 dlButton.style.display = 'none';
                 statusMess.style.display = 'none';
                 loadSpinner.style.display = 'none';
                 BUSYlink.style.display = 'initial';
+                NOWlink.style.display = 'none';
                 takinAWhile.style.display = 'initial';
                 stopPolling();
             }
             pollCount += 1;
-            if (pollingStatus) {
-                pollingTm = setTimeout(function() {
-                    pollData();
-                }, 3000);
-            }
         }
 })}
 
