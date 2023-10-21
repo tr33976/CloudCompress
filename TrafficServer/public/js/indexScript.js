@@ -49,7 +49,6 @@ function(){
                         }  
                     })
                 }
-                console.log(urls);
                 submitBtn.removeAttribute('disabled');
                 flexSwitchCheckDefault.removeAttribute('disabled');
             }
@@ -123,8 +122,6 @@ function formSubmit(event) {
     for (let i = 0; i < input.files.length; i++){
         const file = input.files[i]
         const blob = new Blob([file],{type: file.type})
-        console.log(file)
-        console.log(urls[i])
         $.ajax({
             url: urls[i],
             type: 'PUT',
@@ -134,7 +131,6 @@ function formSubmit(event) {
             contentType: file.type,
             complete: function(response) {
                 filescomplete += 1;
-                console.log("submitted");
                 if(filescomplete===input.files.length){
                     window.location.href = `/files?k=${uniqKey}&t=${flexSwitchCheckDefault.checked}&u=${ranUser.value}`;
                 }
